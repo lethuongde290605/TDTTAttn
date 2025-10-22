@@ -300,6 +300,15 @@ def main():
     # Calculate compression statistics
     calculate_compression_stats(compressed_model, args, logger)
     
+    # Move model back to device for evaluation
+    logger.info(f"\nMoving compressed model to {lm.device}...")
+    if "opt" in args.net.lower():
+        lm.model = lm.model.to(lm.device)
+    elif "llama" in args.net.lower():
+        lm.model = lm.model.to(lm.device)
+    elif "mpt" in args.net.lower():
+        lm.model = lm.model.to(lm.device)
+    
     # Evaluate compressed model
     logger.info("\n" + "="*80)
     logger.info("Evaluating COMPRESSED model")
