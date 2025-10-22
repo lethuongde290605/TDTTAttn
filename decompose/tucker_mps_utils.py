@@ -51,23 +51,15 @@ def rel_fro_loss(X, X_hat):
 # -------------------------
 def hosvd_init(X, ranks):
     """Return factors list computed by truncated SVD of each mode unfolding."""
-    # Store original dtype
-    original_dtype = X.dtype
-    if X.dtype == torch.float16:
-        X = X.float()
-    
     factors = []
     for mode, r in enumerate(ranks):
         Xn = unfold(X, mode)
+        # Ensure Xn is float32 for SVD
+        if Xn.dtype == torch.float16:
+            Xn = Xn.float()
         U, S, Vh = torch.linalg.svd(Xn, full_matrices=False)
         factors.append(U[:, :r].contiguous())
     core = compute_core(X, factors)
-    
-    # Convert back to original dtype
-    if original_dtype == torch.float16:
-        core = core.half()
-        factors = [f.half() for f in factors]
-    
     return core, factors
 
 # -------------------------
@@ -103,6 +95,9 @@ def hooi(X, ranks, n_iter_max=10, tol=1e-6, verbose=False):
                 Gtilde = n_mode_product(Gtilde, factors[k].T, k)
             # unfold along mode n and take top-r left singular vectors
             Gn = unfold(Gtilde, n)
+            # Ensure Gn is float32 for SVD
+            if Gn.dtype == torch.float16:
+                Gn = Gn.float()
             U, S, Vh = torch.linalg.svd(Gn, full_matrices=False)
             r_n = ranks[n]
             factors[n] = U[:, :r_n].contiguous()
@@ -195,6 +190,9 @@ def mps_decomposition(X: torch.Tensor, eps: float = 0.9):
     X = torch.matmul(S, Vh)
 
     X = X.reshape(delta_1 * dims[1], -1)
+    # Ensure X is float32 for second SVD
+    if X.dtype == torch.float16:
+        X = X.float()
     U, S, Vh = torch.linalg.svd(X, full_matrices=False)
     delta_2 = choose_rank(S, eps)
 
