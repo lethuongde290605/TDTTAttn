@@ -61,6 +61,17 @@ from decompose.eigen_attn_utils import *
 
 logger = logging.get_logger(__name__)
 
+# Fallback docstrings for compatibility with different transformers versions
+try:
+    LLAMA_INPUTS_DOCSTRING
+except NameError:
+    LLAMA_INPUTS_DOCSTRING = """Inputs for Llama model"""
+
+try:
+    LLAMA_START_DOCSTRING
+except NameError:
+    LLAMA_START_DOCSTRING = """Llama model"""
+
 _CONFIG_FOR_DOC = "LlamaConfig"
 
 
