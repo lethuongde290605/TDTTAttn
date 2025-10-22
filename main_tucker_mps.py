@@ -319,29 +319,39 @@ def main():
     if args.eval_ppl:
         ppl_results = evaluate_ppl(lm, args, logger)
         results.update(ppl_results)
+        print(f"\n[DEBUG] PPL evaluation completed, results: {results}", flush=True)
     
     if args.tasks:
         task_results = evaluate_tasks(lm, args, logger)
         results.update(task_results)
     
+    print(f"\n[DEBUG] About to print final results", flush=True)
     logger.info("\n" + "="*80)
     logger.info("Final Results:")
     logger.info("="*80)
     pprint(results)
     
     # Save compressed model
+    print(f"\n[DEBUG] Preparing to save model to {args.save_dir}", flush=True)
     save_path = os.path.join(args.save_dir, f"{args.net}_tucker_mps_eps{args.mps_eps}")
     os.makedirs(save_path, exist_ok=True)
     logger.info(f"\nSaving compressed model to {save_path}...")
+    
+    print(f"[DEBUG] Calling torch.save...", flush=True)
     torch.save(lm.model.state_dict(), f"{save_path}/model.pt")
+    print(f"[DEBUG] Model saved successfully", flush=True)
     
     # Save results to output directory
     import json
+    print(f"[DEBUG] Saving results JSON...", flush=True)
     results_file = os.path.join(args.output_dir, f"{args.net}_tucker_mps_eps{args.mps_eps}_results.json")
     with open(results_file, 'w') as f:
         json.dump(results, f, indent=2)
     logger.info(f"Results saved to {results_file}")
+    print(f"[DEBUG] JSON saved successfully", flush=True)
+    
     logger.info("Done!")
+    print(f"\n[DEBUG] Script completed successfully!", flush=True)
 
 
 if __name__ == "__main__":
