@@ -259,6 +259,17 @@ def combined_mps_hooi_compression(
 
     if verbose:
         print(f"[Reconstruct] Final tensor shape: {reconstructed.shape}")
+        print(f"[Reconstruct] Expected to be 3D, will flatten to 2D matrix")
 
     # 7. Flatten back to matrix form
-    return reconstructed.reshape(768, -1)
+    # The reconstructed tensor has compressed structure
+    # We need to reshape it properly to [out_features, in_features] for Linear layer
+    out_dim = reconstructed.shape[0] * reconstructed.shape[1]  # compressed dimension
+    in_dim = reconstructed.shape[2]  # should be related to input dimension
+    
+    result = reconstructed.reshape(out_dim, in_dim)
+    
+    if verbose:
+        print(f"[Final] Reshaped to: {result.shape}")
+    
+    return result

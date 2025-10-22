@@ -419,7 +419,7 @@ class OPTTuckerMPSAttention(nn.Module):
             org_weight_k, 
             mps_eps=self.mps_eps,
             hooi_ranks=self.hooi_ranks,
-            verbose=False
+            verbose=True  # Enable verbose for first compression
         )
         
         print(f"Compressing Q projection weight: {org_weight_q.shape}")
