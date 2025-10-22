@@ -132,10 +132,6 @@ def test_compression_only():
         print(f"\n✓ Compression successful!")
         print(f"Compressed shape: {compressed.shape}")
         
-        # Calculate reconstruction error
-        error = torch.norm(weight_matrix - compressed) / torch.norm(weight_matrix)
-        print(f"\n📊 Reconstruction error: {error.item():.6f}")
-        
     except Exception as e:
         print(f"\n❌ Error: {str(e)}")
         import traceback
