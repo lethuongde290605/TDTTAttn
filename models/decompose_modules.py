@@ -7,6 +7,7 @@ from transformers.models.mpt.configuration_mpt import *
 import math
 from transformers.models.llama.modeling_llama import *
 from transformers.models.llama.configuration_llama import *
+from decompose.tucker_mps_utils import combined_mps_hooi_compression
 
 
 
@@ -351,6 +352,379 @@ class OPTEigenAttnDecoderLayer(nn.Module):
 
         hidden_states = (residual + hidden_states).view(hidden_states_shape)
         # residual.add_(hidden_states.to(residual.dtype))
+        if not self.do_layer_norm_before:
+            hidden_states = self.final_layer_norm(hidden_states)
+
+        outputs = (hidden_states,)
+
+        if output_attentions:
+            outputs += (self_attn_weights,)
+
+        if use_cache:
+            outputs += (present_key_value,)
+        return outputs
+
+
+class OPTTuckerMPSAttention(nn.Module):
+    """Multi-headed attention with Tucker-MPS compression from 'Attention Is All You Need' paper"""
+
+    def __init__(
+        self,
+        org_module: nn.Module,
+        embed_dim: int,
+        num_heads: int,
+        dropout: float = 0.0,
+        is_decoder: bool = False,
+        bias: bool = True,
+        args=None,
+        mps_eps: float = 0.99,
+        hooi_ranks: List[int] = None,
+    ):
+        super().__init__()
+        self.embed_dim = embed_dim
+        self.num_heads = num_heads
+        self.dropout = dropout
+        self.head_dim = embed_dim // num_heads
+
+        if (self.head_dim * num_heads) != self.embed_dim:
+            raise ValueError(
+                f"embed_dim must be divisible by num_heads (got `embed_dim`: {self.embed_dim}"
+                f" and `num_heads`: {num_heads})."
+            )
+
+        self.scaling = self.head_dim**-0.5
+        self.is_decoder = is_decoder
+
+        # Tucker-MPS compression parameters
+        self.mps_eps = mps_eps
+        self.hooi_ranks = hooi_ranks if hooi_ranks is not None else [6, 6, 8]
+
+        # Get original weights
+        org_weight_k = org_module.k_proj.weight.data
+        org_bias_k = org_module.k_proj.bias.data
+
+        org_weight_q = org_module.q_proj.weight.data
+        org_bias_q = org_module.q_proj.bias.data
+
+        org_weight_v = org_module.v_proj.weight.data
+        org_bias_v = org_module.v_proj.bias.data
+
+        org_weight_out = org_module.out_proj.weight.data
+        org_bias_out = org_module.out_proj.bias.data
+
+        # Apply Tucker-MPS compression to K, Q, V weights
+        print(f"Compressing K projection weight: {org_weight_k.shape}")
+        compressed_k = combined_mps_hooi_compression(
+            org_weight_k, 
+            mps_eps=self.mps_eps,
+            hooi_ranks=self.hooi_ranks,
+            verbose=False
+        )
+        
+        print(f"Compressing Q projection weight: {org_weight_q.shape}")
+        compressed_q = combined_mps_hooi_compression(
+            org_weight_q,
+            mps_eps=self.mps_eps,
+            hooi_ranks=self.hooi_ranks,
+            verbose=False
+        )
+        
+        print(f"Compressing V projection weight: {org_weight_v.shape}")
+        compressed_v = combined_mps_hooi_compression(
+            org_weight_v,
+            mps_eps=self.mps_eps,
+            hooi_ranks=self.hooi_ranks,
+            verbose=False
+        )
+
+        # Create compressed linear layers
+        # Note: compressed weights may have different output dimensions
+        self.k_proj = torch.nn.Linear(self.embed_dim, compressed_k.shape[0], bias=bias)
+        self.k_proj.weight.data = compressed_k
+        if bias:
+            # For bias, we keep original or pad/truncate as needed
+            if compressed_k.shape[0] == org_bias_k.shape[0]:
+                self.k_proj.bias.data = org_bias_k
+            else:
+                # Truncate or pad bias
+                min_dim = min(compressed_k.shape[0], org_bias_k.shape[0])
+                self.k_proj.bias.data[:min_dim] = org_bias_k[:min_dim]
+
+        self.q_proj = torch.nn.Linear(self.embed_dim, compressed_q.shape[0], bias=bias)
+        self.q_proj.weight.data = compressed_q
+        if bias:
+            if compressed_q.shape[0] == org_bias_q.shape[0]:
+                self.q_proj.bias.data = org_bias_q
+            else:
+                min_dim = min(compressed_q.shape[0], org_bias_q.shape[0])
+                self.q_proj.bias.data[:min_dim] = org_bias_q[:min_dim]
+
+        self.v_proj = torch.nn.Linear(self.embed_dim, compressed_v.shape[0], bias=bias)
+        self.v_proj.weight.data = compressed_v
+        if bias:
+            if compressed_v.shape[0] == org_bias_v.shape[0]:
+                self.v_proj.bias.data = org_bias_v
+            else:
+                min_dim = min(compressed_v.shape[0], org_bias_v.shape[0])
+                self.v_proj.bias.data[:min_dim] = org_bias_v[:min_dim]
+
+        # Output projection - keep original for now
+        # In full implementation, you might want to compress this too
+        self.out_proj = torch.nn.Linear(self.embed_dim, self.embed_dim, bias=bias)
+        self.out_proj.weight.data = org_weight_out
+        self.out_proj.bias = org_bias_out
+
+        # Store compressed dimensions
+        self.compressed_dim_k = compressed_k.shape[0]
+        self.compressed_dim_q = compressed_q.shape[0]
+        self.compressed_dim_v = compressed_v.shape[0]
+
+        print(f"Compression complete: K:{org_weight_k.shape[0]}->{self.compressed_dim_k}, "
+              f"Q:{org_weight_q.shape[0]}->{self.compressed_dim_q}, "
+              f"V:{org_weight_v.shape[0]}->{self.compressed_dim_v}")
+
+    def _shape(self, tensor: torch.Tensor, seq_len: int, bsz: int):
+        return (
+            tensor.view(bsz, seq_len, self.num_heads, self.head_dim)
+            .transpose(1, 2)
+            .contiguous()
+        )
+
+    def _compressed_shape(self, tensor: torch.Tensor, seq_len: int, bsz: int, compressed_dim: int):
+        """Reshape for compressed dimensions"""
+        head_compressed_dim = compressed_dim // self.num_heads
+        return tensor.view(bsz, seq_len, self.num_heads, head_compressed_dim).transpose(1, 2).contiguous()
+
+    def forward(
+        self,
+        hidden_states: torch.Tensor,
+        key_value_states: Optional[torch.Tensor] = None,
+        past_key_value: Optional[Tuple[torch.Tensor]] = None,
+        attention_mask: Optional[torch.Tensor] = None,
+        layer_head_mask: Optional[torch.Tensor] = None,
+        output_attentions: bool = False,
+    ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
+        """Input shape: Batch x Time x Channel"""
+        is_cross_attention = key_value_states is not None
+
+        bsz, tgt_len, _ = hidden_states.size()
+
+        # get query proj
+        query_states = self.q_proj(hidden_states) * self.scaling
+
+        # get key, value proj
+        if is_cross_attention and past_key_value is not None:
+            # reuse k,v, cross_attentions
+            key_states = past_key_value[0]
+            value_states = past_key_value[1]
+        elif is_cross_attention:
+            # cross_attentions
+            key_states = self._compressed_shape(self.k_proj(key_value_states), -1, bsz, self.compressed_dim_k)
+            value_states = self._compressed_shape(self.v_proj(key_value_states), -1, bsz, self.compressed_dim_v)
+        elif past_key_value is not None:
+            # reuse k, v, self_attention
+            key_states = self._compressed_shape(self.k_proj(hidden_states), -1, bsz, self.compressed_dim_k)
+            value_states = self._compressed_shape(self.v_proj(hidden_states), -1, bsz, self.compressed_dim_v)
+            key_states = torch.cat([past_key_value[0], key_states], dim=2)
+            value_states = torch.cat([past_key_value[1], value_states], dim=2)
+        else:
+            # self_attention
+            key_states = self._compressed_shape(self.k_proj(hidden_states), -1, bsz, self.compressed_dim_k)
+            value_states = self._compressed_shape(self.v_proj(hidden_states), -1, bsz, self.compressed_dim_v)
+
+        if self.is_decoder:
+            past_key_value = (key_states, value_states)
+
+        head_dim_k = self.compressed_dim_k // self.num_heads
+        head_dim_q = self.compressed_dim_q // self.num_heads
+        head_dim_v = self.compressed_dim_v // self.num_heads
+
+        proj_shape_kq = (bsz * self.num_heads, -1, head_dim_k)
+        proj_shape_v = (bsz * self.num_heads, -1, head_dim_v)
+
+        query_states = self._compressed_shape(query_states, tgt_len, bsz, self.compressed_dim_q).view(bsz * self.num_heads, tgt_len, head_dim_q)
+        key_states = key_states.view(*proj_shape_kq)
+        value_states = value_states.view(*proj_shape_v)
+
+        src_len = key_states.size(1)
+        
+        # Attention computation with compressed dimensions
+        # If K and Q have different compressed dims, we need to handle this
+        if head_dim_k != head_dim_q:
+            # Project Q to match K dimension for attention computation
+            # Simple linear projection
+            if not hasattr(self, 'q_to_k_proj'):
+                self.q_to_k_proj = nn.Linear(head_dim_q, head_dim_k, bias=False).to(query_states.device)
+                nn.init.eye_(self.q_to_k_proj.weight[:min(head_dim_q, head_dim_k), :min(head_dim_q, head_dim_k)])
+            query_states = self.q_to_k_proj(query_states)
+        
+        attn_weights = torch.matmul(query_states, key_states.transpose(1, 2))
+
+        if attn_weights.size() != (bsz * self.num_heads, tgt_len, src_len):
+            raise ValueError(
+                f"Attention weights should be of size {(bsz * self.num_heads, tgt_len, src_len)}, but is"
+                f" {attn_weights.size()}"
+            )
+
+        if attention_mask is not None:
+            if attention_mask.size() != (bsz, 1, tgt_len, src_len):
+                raise ValueError(
+                    f"Attention mask should be of size {(bsz, 1, tgt_len, src_len)}, but is {attention_mask.size()}"
+                )
+            attn_weights = (
+                attn_weights.view(bsz, self.num_heads, tgt_len, src_len)
+                + attention_mask
+            )
+            attn_weights = torch.max(
+                attn_weights, torch.tensor(torch.finfo(attn_weights.dtype).min)
+            )
+            attn_weights = attn_weights.view(bsz * self.num_heads, tgt_len, src_len)
+
+        # upcast attention to fp32 if the weights are in fp16
+        if attn_weights.dtype == torch.float16:
+            attn_weights = nn.functional.softmax(
+                attn_weights, dim=-1, dtype=torch.float32
+            ).to(torch.float16)
+        else:
+            attn_weights = nn.functional.softmax(attn_weights, dim=-1)
+
+        if layer_head_mask is not None:
+            if layer_head_mask.size() != (self.num_heads,):
+                raise ValueError(
+                    f"Head mask for a single layer should be of size {(self.num_heads,)}, but is"
+                    f" {layer_head_mask.size()}"
+                )
+            attn_weights = layer_head_mask.view(1, -1, 1, 1) * attn_weights.view(
+                bsz, self.num_heads, tgt_len, src_len
+            )
+            attn_weights = attn_weights.view(bsz * self.num_heads, tgt_len, src_len)
+
+        if output_attentions:
+            attn_weights_reshaped = attn_weights.view(
+                bsz, self.num_heads, tgt_len, src_len
+            )
+            attn_weights = attn_weights_reshaped.view(
+                bsz * self.num_heads, tgt_len, src_len
+            )
+        else:
+            attn_weights_reshaped = None
+
+        attn_output = torch.matmul(attn_weights, value_states)
+
+        if attn_output.size() != (bsz * self.num_heads, tgt_len, head_dim_v):
+            raise ValueError(
+                f"`attn_output` should be of size {(bsz * self.num_heads, tgt_len, head_dim_v)}, but is"
+                f" {attn_output.size()}"
+            )
+
+        attn_output = attn_output.view(bsz, self.num_heads, tgt_len, head_dim_v)
+        attn_output = attn_output.transpose(1, 2)
+
+        # Reshape back to embed_dim
+        attn_output = attn_output.reshape(bsz, tgt_len, self.compressed_dim_v)
+        
+        # Project back to original embedding dimension
+        if self.compressed_dim_v != self.embed_dim:
+            if not hasattr(self, 'v_to_embed_proj'):
+                self.v_to_embed_proj = nn.Linear(self.compressed_dim_v, self.embed_dim, bias=False).to(attn_output.device)
+                # Initialize with partial identity
+                nn.init.zeros_(self.v_to_embed_proj.weight)
+                min_dim = min(self.compressed_dim_v, self.embed_dim)
+                self.v_to_embed_proj.weight.data[:min_dim, :min_dim] = torch.eye(min_dim)
+            attn_output = self.v_to_embed_proj(attn_output)
+        
+        attn_output = self.out_proj(attn_output)
+
+        return attn_output, attn_weights_reshaped, past_key_value
+
+
+class OPTTuckerMPSDecoderLayer(nn.Module):
+    def __init__(self, 
+                ori_layer,
+                args,
+                config,
+                mps_eps: float = 0.99,
+                hooi_ranks: List[int] = None):
+       
+        super().__init__()
+        self.embed_dim = config.hidden_size
+        self.self_attn = OPTTuckerMPSAttention(
+            org_module=ori_layer.self_attn,
+            embed_dim=self.embed_dim,
+            num_heads=config.num_attention_heads,
+            dropout=config.attention_dropout,
+            is_decoder=True,
+            bias=config.enable_bias,
+            args=args,
+            mps_eps=mps_eps,
+            hooi_ranks=hooi_ranks,
+        )
+        self.do_layer_norm_before = config.do_layer_norm_before
+        self.dropout = config.dropout
+        self.self_attn_layer_norm = ori_layer.self_attn_layer_norm
+
+        self.fc1 = nn.Linear(self.embed_dim, config.ffn_dim, bias=config.enable_bias)
+        self.fc1.weight.data = ori_layer.fc1.weight.data
+        self.fc1.bias.data = ori_layer.fc1.bias.data
+
+        self.fc2 = nn.Linear(config.ffn_dim, self.embed_dim, bias=config.enable_bias)
+        self.fc2.weight.data = ori_layer.fc2.weight.data
+        self.fc2.bias.data = ori_layer.fc2.bias.data
+        
+        self.final_layer_norm = ori_layer.final_layer_norm
+
+    def forward(
+        self,
+        hidden_states: torch.Tensor,
+        attention_mask: Optional[torch.Tensor] = None,
+        layer_head_mask: Optional[torch.Tensor] = None,
+        output_attentions: Optional[bool] = False,
+        use_cache: Optional[bool] = False,
+        past_key_value: Optional[Tuple[torch.Tensor]] = None,
+        **kwargs
+    ):
+        """
+        Args:
+            hidden_states: input tensor
+            attention_mask: attention mask
+            layer_head_mask: mask for attention heads
+            output_attentions: whether to return attention weights
+            use_cache: whether to use past key values
+            past_key_value: cached past key and value projection states
+        """
+        # Self Attention
+        residual = hidden_states
+        if self.do_layer_norm_before:
+            hidden_states = self.self_attn_layer_norm(hidden_states)
+
+        hidden_states, self_attn_weights, present_key_value = self.self_attn(
+            hidden_states=hidden_states,
+            past_key_value=past_key_value,
+            attention_mask=attention_mask,
+            layer_head_mask=layer_head_mask,
+            output_attentions=output_attentions,
+        )
+
+        hidden_states = nn.functional.dropout(hidden_states, p=0.0, training=False)
+        hidden_states = residual + hidden_states
+
+        if not self.do_layer_norm_before:
+            hidden_states = self.self_attn_layer_norm(hidden_states)
+
+        # Fully Connected
+        hidden_states_shape = hidden_states.shape
+        hidden_states = hidden_states.reshape(-1, hidden_states.size(-1))
+        residual = hidden_states
+
+        if self.do_layer_norm_before:
+            hidden_states = self.final_layer_norm(hidden_states)
+        
+        hidden_states = self.fc1(hidden_states)
+        hidden_states = F.relu(hidden_states)
+        hidden_states = self.fc2(hidden_states)
+
+        hidden_states = (residual + hidden_states).view(hidden_states_shape)
+        
         if not self.do_layer_norm_before:
             hidden_states = self.final_layer_norm(hidden_states)
 
