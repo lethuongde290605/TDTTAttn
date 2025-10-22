@@ -51,12 +51,23 @@ def rel_fro_loss(X, X_hat):
 # -------------------------
 def hosvd_init(X, ranks):
     """Return factors list computed by truncated SVD of each mode unfolding."""
+    # Store original dtype
+    original_dtype = X.dtype
+    if X.dtype == torch.float16:
+        X = X.float()
+    
     factors = []
     for mode, r in enumerate(ranks):
         Xn = unfold(X, mode)
         U, S, Vh = torch.linalg.svd(Xn, full_matrices=False)
         factors.append(U[:, :r].contiguous())
     core = compute_core(X, factors)
+    
+    # Convert back to original dtype
+    if original_dtype == torch.float16:
+        core = core.half()
+        factors = [f.half() for f in factors]
+    
     return core, factors
 
 # -------------------------
@@ -66,6 +77,11 @@ def hooi(X, ranks, n_iter_max=10, tol=1e-6, verbose=False):
     """
     HOOI algorithm (ALS) to compute Tucker decomposition.
     """
+    # Store original dtype
+    original_dtype = X.dtype
+    if X.dtype == torch.float16:
+        X = X.float()
+    
     N = X.ndim - 1
     # initialize by HOSVD
     core, factors = hosvd_init(X, ranks)
@@ -103,6 +119,11 @@ def hooi(X, ranks, n_iter_max=10, tol=1e-6, verbose=False):
             print(f"[iter {it+1}] loss={loss_new:.6e}, rel_change={rel_change:.3e}")
         if rel_change < tol:
             break
+    
+    # Convert back to original dtype
+    if original_dtype == torch.float16:
+        core = core.half()
+        factors = [f.half() for f in factors]
 
     return core, factors, history
 
@@ -150,6 +171,14 @@ def choose_rank(S: torch.Tensor, eps: float = 0.9) -> int:
 
 def mps_decomposition(X: torch.Tensor, eps: float = 0.9):
     """MPS decomposition for 3D tensor."""
+    # Store original dtype and device
+    original_dtype = X.dtype
+    original_device = X.device
+    
+    # Convert to float32 for SVD if needed
+    if X.dtype == torch.float16:
+        X = X.float()
+    
     dims = X.shape
     Bs = []
     X = mode_matricize(X, 0)
@@ -180,6 +209,10 @@ def mps_decomposition(X: torch.Tensor, eps: float = 0.9):
     X = X.reshape(delta_1, dims[1], delta_2)
 
     G = Bs + [X] + Cs
+    
+    # Convert back to original dtype if needed
+    if original_dtype == torch.float16:
+        G = [g.half() for g in G]
 
     return G
 
