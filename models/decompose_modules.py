@@ -7,6 +7,7 @@ from transformers.models.mpt.configuration_mpt import *
 import math
 from transformers.models.llama.modeling_llama import *
 from transformers.models.llama.configuration_llama import *
+from transformers.cache_utils import Cache
 from decompose.tucker_mps_utils import combined_mps_hooi_compression
 
 
