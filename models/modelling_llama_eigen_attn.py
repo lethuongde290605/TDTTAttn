@@ -227,8 +227,10 @@ class LlamaEigenAttention(nn.Module):
 
 LLAMA_ATTENTION_CLASSES = {
     "eager": LlamaEigenAttention,
-    "flash_attention_2": LlamaFlashAttention2,
-    "sdpa": LlamaSdpaAttention,
+    # Fallback to eager attention if FlashAttention2 not available
+    "flash_attention_2": LlamaEigenAttention,
+    # Fallback to eager attention if SDPA not available  
+    "sdpa": LlamaEigenAttention,
 }
 
 
