@@ -473,7 +473,8 @@ class OPTTuckerMPSAttention(nn.Module):
         # In full implementation, you might want to compress this too
         self.out_proj = torch.nn.Linear(self.embed_dim, self.embed_dim, bias=bias)
         self.out_proj.weight.data = org_weight_out
-        self.out_proj.bias = org_bias_out
+        if bias and org_bias_out is not None:
+            self.out_proj.bias.data = org_bias_out.data if isinstance(org_bias_out, nn.Parameter) else org_bias_out
 
         # Store compressed dimensions
         self.compressed_dim_k = compressed_k.shape[0]
