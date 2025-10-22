@@ -66,7 +66,7 @@ def hooi(X, ranks, n_iter_max=10, tol=1e-6, verbose=False):
     """
     HOOI algorithm (ALS) to compute Tucker decomposition.
     """
-    N = X.ndim
+    N = X.ndim - 1
     # initialize by HOSVD
     core, factors = hosvd_init(X, ranks)
     X_hat = reconstruct(core, factors)
