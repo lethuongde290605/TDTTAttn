@@ -221,7 +221,7 @@ def combined_mps_hooi_compression(
     hooi_input_shape: Tuple[int, int, int, int] = (8, 8, 12, 100),
     n_iter_max: int = 100,
     tol: float = 1e-7,
-    verbose: bool = True
+    verbose: bool = False
 ) -> torch.Tensor:
     """
     Perform combined MPS and HOOI compression on a square input tensor (768x768).

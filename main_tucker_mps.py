@@ -129,11 +129,11 @@ def evaluate_tasks(lm, args, logger):
 def calculate_compression_stats(model, args, logger):
     """Calculate and log compression statistics"""
     if "opt" in args.net.lower():
-        layers = model.model.model.decoder.layers
+        layers = model.model.decoder.layers
     elif "llama" in args.net.lower():
-        layers = model.model.model.layers
+        layers = model.layers
     elif "mpt" in args.net.lower():
-        layers = model.model.transformer.blocks
+        layers = model.transformer.blocks
     else:
         return
     
