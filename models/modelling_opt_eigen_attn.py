@@ -263,7 +263,10 @@ class OPTEigenAttention(nn.Module):
 
 OPT_ATTENTION_CLASSES = {
     "eager": OPTEigenAttention,
-    "flash_attention_2": OptFlashAttention2,
+    # If FlashAttention2 is not available/implemented for OPT in this repo,
+    # fall back to the eager/eigen-attention implementation so imports succeed.
+    # This is a safe default; real flash-attn behavior can be added later.
+    "flash_attention_2": OPTEigenAttention,
 }
 
 
