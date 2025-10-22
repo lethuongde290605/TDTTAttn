@@ -182,6 +182,10 @@ def main():
                        help="Model family (opt, llama, mpt)")
     parser.add_argument("--cache_dir", type=str, default="./cache",
                        help="Cache directory for datasets")
+    parser.add_argument("--save_dir", type=str, default="./compressed_models",
+                       help="Directory to save compressed model")
+    parser.add_argument("--output_dir", type=str, default="./outputs",
+                       help="Directory to save evaluation outputs")
     
     # Tucker-MPS compression arguments
     parser.add_argument("--mps_eps", type=float, default=0.99,
@@ -221,8 +225,10 @@ def main():
     
     args = parser.parse_args()
     
-    # Create cache directory
+    # Create necessary directories
     os.makedirs(args.cache_dir, exist_ok=True)
+    os.makedirs(args.save_dir, exist_ok=True)
+    os.makedirs(args.output_dir, exist_ok=True)
     
     # Setup logger
     logger = setup_logger(args)
@@ -308,11 +314,18 @@ def main():
     logger.info("="*80)
     pprint(results)
     
-    # Save compressed model if needed
-    save_path = f"./checkpoints/{args.model_family}_tucker_mps_eps{args.mps_eps}"
+    # Save compressed model
+    save_path = os.path.join(args.save_dir, f"{args.net}_tucker_mps_eps{args.mps_eps}")
     os.makedirs(save_path, exist_ok=True)
     logger.info(f"\nSaving compressed model to {save_path}...")
     torch.save(lm.model.state_dict(), f"{save_path}/model.pt")
+    
+    # Save results to output directory
+    import json
+    results_file = os.path.join(args.output_dir, f"{args.net}_tucker_mps_eps{args.mps_eps}_results.json")
+    with open(results_file, 'w') as f:
+        json.dump(results, f, indent=2)
+    logger.info(f"Results saved to {results_file}")
     logger.info("Done!")
 
 
