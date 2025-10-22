@@ -182,6 +182,10 @@ def main():
                        help="Model family (opt, llama, mpt)")
     parser.add_argument("--cache_dir", type=str, default="./cache",
                        help="Cache directory for datasets")
+    parser.add_argument("--attn_implementation", type=str, default="eager",
+                       help="Attention implementation (eager, sdpa, flash_attention_2)")
+    parser.add_argument("--load_low_rank", action="store_true",
+                       help="Load pre-compressed low-rank model")
     parser.add_argument("--save_dir", type=str, default="./compressed_models",
                        help="Directory to save compressed model")
     parser.add_argument("--output_dir", type=str, default="./outputs",
@@ -218,6 +222,8 @@ def main():
     # Device arguments
     parser.add_argument("--multigpu", action="store_true",
                        help="Use multiple GPUs")
+    parser.add_argument("--batch_size", type=int, default=1,
+                       help="Batch size for evaluation")
     
     # Baseline evaluation
     parser.add_argument("--evaluate_baseline", action="store_true",
