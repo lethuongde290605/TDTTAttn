@@ -52,6 +52,17 @@ if is_flash_attn_2_available():
 
 logger = logging.get_logger(__name__)
 
+# Fallback docstrings in case transformers doesn't provide them in this environment
+try:
+    OPT_START_DOCSTRING
+except NameError:
+    OPT_START_DOCSTRING = """OPT model"""
+
+try:
+    OPT_INPUTS_DOCSTRING
+except NameError:
+    OPT_INPUTS_DOCSTRING = """Inputs for OPT model"""
+
 _CHECKPOINT_FOR_DOC = "facebook/opt-350m"
 _CONFIG_FOR_DOC = "OPTConfig"
 
