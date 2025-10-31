@@ -650,8 +650,12 @@ class OPTTuckerMPSDecoderLayer(nn.Module):
                 args,
                 config,
                 mps_eps: float = 0.99,
-                hooi_ranks: List[int] = None):
-       
+                hooi_ranks: List[int] = None,
+                w_q=None,
+                w_k=None,
+                w_v=None
+                ):
+
         super().__init__()
         self.embed_dim = config.hidden_size
         self.self_attn = OPTTuckerMPSAttention(
@@ -664,6 +668,7 @@ class OPTTuckerMPSDecoderLayer(nn.Module):
             args=args,
             mps_eps=mps_eps,
             hooi_ranks=hooi_ranks,
+            w_q=w_q, w_k=w_k, w_v=w_v
         )
         self.do_layer_norm_before = config.do_layer_norm_before
         self.dropout = config.dropout
