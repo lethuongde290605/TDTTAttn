@@ -8,7 +8,7 @@ import copy
 import gc
 
 from models.decompose_modules import OPTTuckerMPSDecoderLayer
-from tucker_mps_utils import collect_weight_matrices_opt
+from decompose.tucker_mps_utils import collect_weight_matrices_opt
 
 
 def tucker_mps_compress(
