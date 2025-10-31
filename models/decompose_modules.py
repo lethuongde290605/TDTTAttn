@@ -380,6 +380,7 @@ class OPTTuckerMPSAttention(nn.Module):
         args=None,
         mps_eps: float = 0.99,
         hooi_ranks: List[int] = None,
+        w_q=None, w_k=None, w_v=None,
     ):
         super().__init__()
         self.embed_dim = embed_dim
@@ -419,6 +420,7 @@ class OPTTuckerMPSAttention(nn.Module):
             org_weight_k, 
             mps_eps=self.mps_eps,
             hooi_ranks=self.hooi_ranks,
+            calibration_data=w_k,
             verbose=True  # Enable verbose for first compression
         )
         
@@ -427,6 +429,7 @@ class OPTTuckerMPSAttention(nn.Module):
             org_weight_q,
             mps_eps=self.mps_eps,
             hooi_ranks=self.hooi_ranks,
+            calibration_data=w_q,
             verbose=False
         )
         
@@ -435,6 +438,7 @@ class OPTTuckerMPSAttention(nn.Module):
             org_weight_v,
             mps_eps=self.mps_eps,
             hooi_ranks=self.hooi_ranks,
+            calibration_data=w_v,
             verbose=False
         )
 

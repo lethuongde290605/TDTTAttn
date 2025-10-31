@@ -8,6 +8,7 @@ import copy
 import gc
 
 from models.decompose_modules import OPTTuckerMPSDecoderLayer
+from tucker_mps_utils import collect_weight_matrices_opt
 
 
 def tucker_mps_compress(
@@ -39,7 +40,8 @@ def tucker_mps_compress(
     
     if hooi_ranks is None:
         hooi_ranks = [6, 6, 8]
-    
+
+    w_q, w_k, w_v = collect_weight_matrices_opt(model)
     # Setup model
     model = lm.model
     dev = lm.device
@@ -129,6 +131,7 @@ def tucker_mps_compress(
                     config=lm.model.config,
                     mps_eps=mps_eps,
                     hooi_ranks=hooi_ranks,
+                    w_q=w_q[i], w_k=w_k[i], w_v=w_v[i],
                 ).to(dev)
                 
                 # Get compressed layer output

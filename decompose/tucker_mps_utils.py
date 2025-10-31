@@ -221,6 +221,7 @@ def combined_mps_hooi_compression(
     hooi_input_shape: Tuple[int, int, int, int] = (8, 8, 12, 100),
     n_iter_max: int = 100,
     tol: float = 1e-7,
+    calibration_data: Optional[torch.Tensor] = None,
     verbose: bool = False
 ) -> torch.Tensor:
     """
@@ -250,9 +251,8 @@ def combined_mps_hooi_compression(
         print(f"[MPS] Got {len(G)} cores with shapes: {[g.shape for g in G]}")
 
     # 2. HOOI Decomposition
-    img_tensor_hooi = torch.randn(*hooi_input_shape, device=X.device, dtype=X.dtype)
     core_hooi, factors_hooi, hist = hooi(
-        img_tensor_hooi,
+        calibration_data.reshape(8, 8, 12, -1),
         ranks=hooi_ranks,
         n_iter_max=n_iter_max,
         tol=tol,
@@ -298,3 +298,45 @@ def combined_mps_hooi_compression(
         print(f"[Final] Reshaped to: {result.shape}")
     
     return result
+
+import torch
+
+def collect_weight_matrices_opt(model, layers_idx=None, device='cpu'):
+    """
+    Collect W_q, W_k, W_v from OPT decoder layers and return three tensors
+    with shape (d_out, d_in, n_layers) as float32 on requested device.
+
+    Args:
+        model: HF OPT model or LMClass.model where decoder.layers exists
+        layers_idx: iterable of layer indices to collect; None -> all layers
+        device: target device for returned tensors ('cpu' or 'cuda:0', ...)
+
+    Returns:
+        W_q_tensor, W_k_tensor, W_v_tensor  # each shape (d, d, n_layers), dtype=float32
+    """
+    layers = model.model.decoder.layers
+    if layers_idx is None:
+        layers_idx = list(range(len(layers)))
+    else:
+        layers_idx = list(layers_idx)
+
+    n = len(layers_idx)
+    # assume all layers have same shapes; read first
+    first = layers[layers_idx[0]]
+    # get weight shapes; prefer attribute names used in this repo
+    Wq = first.self_attn.q_proj.weight
+    d_out, d_in = Wq.shape
+
+    # create output tensors
+    W_q = torch.empty((d_out, d_in, n), dtype=torch.float32, device=device)
+    W_k = torch.empty((d_out, d_in, n), dtype=torch.float32, device=device)
+    W_v = torch.empty((d_out, d_in, n), dtype=torch.float32, device=device)
+
+    for idx, li in enumerate(layers_idx):
+        layer = layers[li]
+        # ensure we detach and convert to float32 on requested device
+        W_q[..., idx] = layer.self_attn.q_proj.weight.detach().to(torch.float32).to(device)
+        W_k[..., idx] = layer.self_attn.k_proj.weight.detach().to(torch.float32).to(device)
+        W_v[..., idx] = layer.self_attn.v_proj.weight.detach().to(torch.float32).to(device)
+
+    return W_q, W_k, W_v
