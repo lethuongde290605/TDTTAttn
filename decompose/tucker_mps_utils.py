@@ -250,6 +250,17 @@ def combined_mps_hooi_compression(
     if verbose:
         print(f"[MPS] Got {len(G)} cores with shapes: {[g.shape for g in G]}")
 
+    # Ensure G dtype/device matches calibration_data (if provided) or fallback to float32
+    if calibration_data is not None and isinstance(calibration_data, torch.Tensor):
+        target_dtype = calibration_data.dtype
+        target_device = calibration_data.device
+    else:
+        target_dtype = torch.float32
+        target_device = X.device if isinstance(X, torch.Tensor) else torch.device('cpu')
+
+    # Cast all cores to target dtype/device
+    G = [g.to(target_dtype).to(target_device) for g in G]
+
     # 2. HOOI Decomposition
     core_hooi, factors_hooi, hist = hooi(
         calibration_data.reshape(8, 8, 12, -1),
@@ -271,7 +282,8 @@ def combined_mps_hooi_compression(
         print(f"[MPS reshape] Core shapes: {[g.shape for g in G]}")
 
     # 4. Transpose HOOI factors
-    factors_T = [f.T for f in factors_hooi]
+    # Cast HOOI factors to match G dtype/device and transpose
+    factors_T = [f.to(target_dtype).to(target_device).T.contiguous() for f in factors_hooi]
 
     # 5. Tensor contractions
     result_G0 = torch.tensordot(G[0], factors_T[0], dims=([1], [1]))
