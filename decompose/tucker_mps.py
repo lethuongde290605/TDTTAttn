@@ -41,7 +41,9 @@ def tucker_mps_compress(
     if hooi_ranks is None:
         hooi_ranks = [6, 6, 8]
 
-    w_q, w_k, w_v = collect_weight_matrices_opt(model)
+    # collect weight matrices from the HF model object (lm.model)
+    # Note: `model` is not defined yet here — use `lm.model` instead
+    w_q, w_k, w_v = collect_weight_matrices_opt(lm.model)
     # Setup model
     model = lm.model
     dev = lm.device
