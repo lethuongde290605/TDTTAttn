@@ -141,6 +141,9 @@ def eigenattn(
                     num_heads = lm.model.config.num_attention_heads
                     basis_kq, eval_kq, basis_v, eval_v = decompose_opt_layer(layer, inps, args, num_heads, i)
                     
+                    logger.info(f"layer {i}: start decompose with threshold {args.eigen_attn_params['threshold']} max memory_allocated {torch.cuda.max_memory_allocated(lm._device) / 1024**2} ")
+                    logger.info(f"   {args.error_budget}")
+
 
                     rank_kq = num_heads * torch.amax((torch.cumsum(eval_kq, dim = 1) < args.eigen_attn_params['threshold']).sum(1))
                     rank_v = num_heads * torch.amax((torch.cumsum(eval_v, dim = 1) < args.eigen_attn_params['threshold']).sum(1))
