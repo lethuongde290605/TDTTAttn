@@ -8,7 +8,7 @@ from models.decompose_modules import OPTEigenAttnDecoderLayer, MptBlockEigenAttn
 
 
 def eigenattn(
-    lm,
+    lm, #original LM
     args,
     dataloader,
     logger=None,
@@ -152,6 +152,7 @@ def eigenattn(
                         args.eigen_attn_params['threshold'] -= 0.02
                         rank_kq = num_heads * torch.amax((torch.cumsum(eval_kq, dim = 1) < args.eigen_attn_params['threshold']).sum(1))
                         rank_v = num_heads * torch.amax((torch.cumsum(eval_v, dim = 1) < args.eigen_attn_params['threshold']).sum(1))
+                        qlayer = DecoderLayer(layer, args, basis_kq, rank_kq, basis_v, rank_v, lm.model.config).to(dev)
 
 
                     #error budget has been reached, revert back to the previous SVD threshold
