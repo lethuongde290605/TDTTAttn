@@ -21,6 +21,9 @@ from models.modelling_llama_eigen_attn import LlamaEigenAttention
 from transformers.models.mpt.modeling_mpt import MptAttention
 from transformers import AutoConfig
 import transformers
+from transformers.tokenization_utils_base import BatchEncoding
+
+torch.serialization.add_safe_globals([BatchEncoding])
 
 
 import pdb
