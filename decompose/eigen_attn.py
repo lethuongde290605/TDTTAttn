@@ -153,6 +153,7 @@ def eigenattn(
                         rank_kq = num_heads * torch.amax((torch.cumsum(eval_kq, dim = 1) < args.eigen_attn_params['threshold']).sum(1))
                         rank_v = num_heads * torch.amax((torch.cumsum(eval_v, dim = 1) < args.eigen_attn_params['threshold']).sum(1))
                         qlayer = DecoderLayer(layer, args, basis_kq, rank_kq, basis_v, rank_v, lm.model.config).to(dev)
+                        logger.info(f"         layer {i} error:{error} threshold:{args.eigen_attn_params['threshold']} rank_kq: {rank_kq} rank_v: {rank_v} max memory_allocated {torch.cuda.max_memory_allocated(lm._device) / 1024**2} ")
 
 
                     #error budget has been reached, revert back to the previous SVD threshold
