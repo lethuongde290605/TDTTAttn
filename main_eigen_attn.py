@@ -22,7 +22,7 @@ from transformers.models.mpt.modeling_mpt import MptAttention
 from transformers import AutoConfig
 import transformers
 from transformers.tokenization_utils_base import BatchEncoding
-
+import tokenizers
 torch.serialization.add_safe_globals([BatchEncoding])
 torch.serialization.add_safe_globals([tokenizers.Encoding])
 
