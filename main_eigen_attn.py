@@ -24,6 +24,7 @@ import transformers
 from transformers.tokenization_utils_base import BatchEncoding
 
 torch.serialization.add_safe_globals([BatchEncoding])
+torch.serialization.add_safe_globals([tokenizers.Encoding])
 
 
 import pdb
