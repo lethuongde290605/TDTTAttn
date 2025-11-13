@@ -42,9 +42,9 @@ net_choices = [
     "Llama-2-7b",
     "Llama-2-13b",
     "Llama-2-70b",
-    "mpt-7b"
-    "mpt-30b"
-    "Llama-3-8b"
+    "mpt-7b",
+    "mpt-30b",
+    "Llama-3-8b",
     "Llama-3-80b"
 ]
 
