@@ -235,13 +235,21 @@ def evaluate(lm, args, logger):
             task_list = args.tasks
         t_results = lm_eval.simple_evaluate(
             model = lm,
-            tasks = args.tasks,
+            tasks = task_list,
             num_fewshot = args.num_fewshot,
             task_manager = task_manager,
         )
         
         results.update(t_results)
-        logger.info(results.get('results'))
+        logger.info(t_results)
+
+        for key, res in t_results.items():
+            try:
+                logger.info(f"Task: {key}, results: {res.get('results', res)}")
+            except Exception as e:
+                logger.error(f"Error logging task {key}: {e}")
+                continue  # tiếp tục với task tiếp theo
+
         #pprint(results)
         # for test of MMLU
         if 'mmlu' in args.tasks:
