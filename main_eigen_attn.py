@@ -241,7 +241,7 @@ def evaluate(lm, args, logger):
         )
         
         results.update(t_results)
-        logger.info(results)
+        logger.info(results.get('results'))
         pprint(results)
         # for test of MMLU
         if 'mmlu' in args.tasks:
