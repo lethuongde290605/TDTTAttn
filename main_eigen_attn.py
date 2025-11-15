@@ -229,6 +229,12 @@ def evaluate(lm, args, logger):
         # )
         import lm_eval
         task_manager = lm_eval.tasks.TaskManager()
+
+        if isinstance(args.tasks, str):
+            task_list = [t.strip() for t in args.tasks.split(',')]
+        else:
+            task_list = args.tasks
+            
         t_results = lm_eval.simple_evaluate(
             model = lm,
             tasks = args.tasks,
