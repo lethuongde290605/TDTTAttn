@@ -238,16 +238,63 @@ def evaluate(lm, args, logger):
 
         t_results = lm_eval.simple_evaluate(
             model = lm,
-            tasks = args.tasks,
+            tasks = task_list,  # Use task_list instead of args.tasks
             num_fewshot = args.num_fewshot,
             task_manager = task_manager,
         )
         
-        results.update(t_results)
-        logger.info(results)
-        pprint(results)
+        # Extract only the important metrics (not the full details)
+        logger.info("\n" + "="*80)
+        logger.info("EVALUATION RESULTS")
+        logger.info("="*80)
+        
+        # Print per-task accuracy
+        all_accs = []
+        for task_name in task_list:
+            if task_name in t_results.get('results', {}):
+                task_result = t_results['results'][task_name]
+                acc = task_result.get('acc', 'N/A')
+                acc_norm = task_result.get('acc_norm', 'N/A')
+                
+                if isinstance(acc, (int, float)):
+                    logger.info(f"  {task_name:20s} | acc: {acc:.4f} | acc_norm: {acc_norm:.4f}")
+                    all_accs.append(acc)
+                else:
+                    logger.info(f"  {task_name:20s} | acc: {acc} | acc_norm: {acc_norm}")
+        
+        # Calculate and print average accuracy
+        if all_accs:
+            avg_acc = sum(all_accs) / len(all_accs)
+            logger.info("-" * 80)
+            logger.info(f"  {'Average Accuracy':20s} | {avg_acc:.4f}")
+            results['avg_acc'] = avg_acc
+        
+        logger.info("="*80 + "\n")
+        
+        # Store only summary results, not full details
+        results['task_results'] = {
+            task: {k: v for k, v in t_results['results'][task].items() 
+                   if k in ['acc', 'acc_norm', 'acc_stderr', 'acc_norm_stderr']}
+            for task in task_list if task in t_results.get('results', {})
+        }
+        
+        # Save results to JSON file if output_dir is specified
+        if args.output_dir:
+            import json
+            results_file = os.path.join(args.output_dir, 'results_summary.json')
+            summary = {
+                'model': args.model,
+                'tasks': task_list,
+                'num_fewshot': args.num_fewshot,
+                'avg_acc': results.get('avg_acc'),
+                'task_results': results.get('task_results', {}),
+            }
+            with open(results_file, 'w') as f:
+                json.dump(summary, f, indent=2)
+            logger.info(f"Results saved to: {results_file}")
+        
         # for test of MMLU
-        if 'mmlu' in args.tasks:
+        if 'mmlu' in task_list or any('mmlu' in t for t in task_list):
             all_cors = []
             all_cors_norm = []
             subcat_cors = {subcat: [] for subcat_lists in subcategories.values() for subcat in subcat_lists}
