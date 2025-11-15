@@ -234,7 +234,8 @@ def evaluate(lm, args, logger):
             task_list = [t.strip() for t in args.tasks.split(',')]
         else:
             task_list = args.tasks
-            
+        logger.info(f"Evaluating tasks: {task_list}")
+
         t_results = lm_eval.simple_evaluate(
             model = lm,
             tasks = args.tasks,
