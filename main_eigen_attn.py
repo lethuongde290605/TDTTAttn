@@ -241,15 +241,20 @@ def evaluate(lm, args, logger):
             task_manager = task_manager,
         )
         
+        import json
+        
         results.update(t_results)
-        logger.info(t_results)
-
-        for key, res in t_results.items():
-            try:
-                logger.info(f"Task: {key}, results: {res.get('results', res)}")
-            except Exception as e:
-                logger.error(f"Error logging task {key}: {e}")
-                continue  # tiếp tục với task tiếp theo
+        logger.info(f"result: {t_results.get('results')}")
+        
+        # === Save to JSON ===
+        if args.save_dir:
+            save_path = Path(args.save_dir) / "results.json"
+        
+            # Lưu riêng phần t_results hoặc cả results tùy bạn
+            with open(save_path, "w", encoding="utf-8") as f:
+                json.dump(results, f, indent=4, ensure_ascii=False)
+        
+            logger.info(f"Saved results to {save_path}")
 
         #pprint(results)
         # for test of MMLU
