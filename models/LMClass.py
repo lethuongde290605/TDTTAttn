@@ -38,6 +38,14 @@ class LMClass(BaseLM):
         config = AutoConfig.from_pretrained(
             args.model, attn_implementation=args.attn_implementation, cache_dir = args.cache_dir
         )
+
+        if hasattr(config, "rope_scaling") and isinstance(config.rope_scaling, dict):
+            if "rope_type" in config.rope_scaling:
+                print("⚠️ Detected llama3-style rope_scaling, converting...")
+                config.rope_scaling = {"type": "dynamic", "factor": 8.0}
+        else:
+            config.rope_scaling = {"type": "dynamic", "factor": 8.0}
+
         config.use_cache = False
         use_fast = False
         if 'mpt' in args.net.lower():
@@ -69,6 +77,9 @@ class LMClass(BaseLM):
             self.seqlen = self.model.config.max_seq_len
         else:
             self.seqlen = self.model.config.max_position_embeddings
+        
+        self.model.to(self._device)
+        
         self.model.eval()
         self.vocab_size = self.tokenizer.vocab_size
         print("vocab size: ", self.vocab_size)

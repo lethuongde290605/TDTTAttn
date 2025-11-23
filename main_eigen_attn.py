@@ -483,6 +483,14 @@ def main():
             from models.modelling_llama_eigen_attn import LlamaForCausalLM_EigenAttn
 
             config = AutoConfig.from_pretrained(args.model, attn_implementation=args.attn_implementation, cache_dir = args.cache_dir)
+            if hasattr(config, "rope_scaling") and isinstance(config.rope_scaling, dict):
+                if "rope_type" in config.rope_scaling:
+                    print("⚠️ Detected llama3-style rope_scaling, converting...")
+                    config.rope_scaling = {"type": "dynamic", "factor": 8.0}
+            else:
+                config.rope_scaling = {"type": "dynamic", "factor": 8.0}
+
+
             model2 = LlamaForCausalLM_EigenAttn.from_pretrained(args.model, config=config, low_rank_config=low_rank_config, device_map='cpu',torch_dtype=torch.float16, cache_dir=args.cache_dir)
             layers2 = model2.model.layers
             bias = config.attention_bias

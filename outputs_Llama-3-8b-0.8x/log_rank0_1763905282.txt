@@ -1,0 +1,35 @@
+[2025-11-23 13:41:22 root] (main_eigen_attn.py 348): INFO Namespace(model='meta-llama/Llama-3.1-8B-Instruct', cache_dir='./HF_cache', resume=None, calib_dataset='wikitext2', nsamples=128, batch_size=2, seed=2, tasks='openbookqa,winogrande,arc_challenge,arc_easy,hellaswag', eval_ppl=True, num_fewshot=0, limit=-1, multigpu=False, attn_implementation='eager', net='Llama-3-8b', load_low_rank=False, load_peft_model=False, peft_model_path=None, save_dir='./compressed_Llama-3-8b-0.8x', output_dir='./outputs_Llama-3-8b-0.8x', evaluate_baseline=False, avg_dim=8, error_budget=0.028, fine_tune=False)
+[2025-11-23 13:41:32 root] (main_eigen_attn.py 386): INFO === start low rank decomposition ===
+[2025-11-23 13:41:53 root] (eigen_attn.py 16): INFO Starting ...
+[2025-11-23 13:42:02 root] (eigen_attn.py 264): INFO layer 0 error:0.010717631317675114 threshold:1.0 rank_kq: 1016 rank_v: 1024 max memory_allocated 24808.19287109375 
+[2025-11-23 13:42:10 root] (eigen_attn.py 264): INFO layer 1 error:0.00043629249557852745 threshold:1.0 rank_kq: 1024 rank_v: 1024 max memory_allocated 24808.19287109375 
+[2025-11-23 13:42:26 root] (eigen_attn.py 264): INFO layer 2 error:0.02689540386199951 threshold:0.8799999999999999 rank_kq: 616 rank_v: 840 max memory_allocated 24808.19287109375 
+[2025-11-23 13:42:36 root] (eigen_attn.py 264): INFO layer 3 error:0.026393117383122444 threshold:0.96 rank_kq: 856 rank_v: 960 max memory_allocated 24808.19287109375 
+[2025-11-23 13:42:46 root] (eigen_attn.py 264): INFO layer 4 error:0.026368718594312668 threshold:0.96 rank_kq: 840 rank_v: 960 max memory_allocated 24808.19287109375 
+[2025-11-23 13:42:55 root] (eigen_attn.py 264): INFO layer 5 error:0.025721389800310135 threshold:0.98 rank_kq: 912 rank_v: 984 max memory_allocated 24808.19287109375 
+[2025-11-23 13:43:04 root] (eigen_attn.py 264): INFO layer 6 error:0.020129553973674774 threshold:0.98 rank_kq: 928 rank_v: 992 max memory_allocated 24808.19287109375 
+[2025-11-23 13:43:13 root] (eigen_attn.py 264): INFO layer 7 error:0.026400523260235786 threshold:0.98 rank_kq: 928 rank_v: 992 max memory_allocated 24808.19287109375 
+[2025-11-23 13:43:22 root] (eigen_attn.py 264): INFO layer 8 error:0.02193579450249672 threshold:0.98 rank_kq: 920 rank_v: 992 max memory_allocated 24808.19287109375 
+[2025-11-23 13:43:31 root] (eigen_attn.py 264): INFO layer 9 error:0.02786819264292717 threshold:0.98 rank_kq: 920 rank_v: 992 max memory_allocated 24808.19287109375 
+[2025-11-23 13:43:40 root] (eigen_attn.py 264): INFO layer 10 error:0.024445191025733948 threshold:0.98 rank_kq: 920 rank_v: 992 max memory_allocated 24808.19287109375 
+[2025-11-23 13:43:50 root] (eigen_attn.py 264): INFO layer 11 error:0.026278452947735786 threshold:0.98 rank_kq: 920 rank_v: 984 max memory_allocated 24808.19287109375 
+[2025-11-23 13:43:59 root] (eigen_attn.py 264): INFO layer 12 error:0.02578321099281311 threshold:0.98 rank_kq: 928 rank_v: 992 max memory_allocated 24808.19287109375 
+[2025-11-23 13:44:08 root] (eigen_attn.py 264): INFO layer 13 error:0.024068467319011688 threshold:0.98 rank_kq: 904 rank_v: 992 max memory_allocated 24808.19287109375 
+[2025-11-23 13:44:15 root] (eigen_attn.py 264): INFO layer 14 error:0.007216944824904203 threshold:1.0 rank_kq: 1016 rank_v: 1024 max memory_allocated 24808.19287109375 
+[2025-11-23 13:44:24 root] (eigen_attn.py 264): INFO layer 15 error:0.02426675520837307 threshold:0.98 rank_kq: 920 rank_v: 992 max memory_allocated 24808.19287109375 
+[2025-11-23 13:44:33 root] (eigen_attn.py 264): INFO layer 16 error:0.02436278760433197 threshold:0.98 rank_kq: 920 rank_v: 992 max memory_allocated 24808.19287109375 
+[2025-11-23 13:44:43 root] (eigen_attn.py 264): INFO layer 17 error:0.022327011451125145 threshold:0.98 rank_kq: 928 rank_v: 992 max memory_allocated 24808.19287109375 
+[2025-11-23 13:44:53 root] (eigen_attn.py 264): INFO layer 18 error:0.022355353459715843 threshold:0.96 rank_kq: 848 rank_v: 960 max memory_allocated 24808.19287109375 
+[2025-11-23 13:45:05 root] (eigen_attn.py 264): INFO layer 19 error:0.025257030501961708 threshold:0.94 rank_kq: 784 rank_v: 936 max memory_allocated 24808.19287109375 
+[2025-11-23 13:45:18 root] (eigen_attn.py 264): INFO layer 20 error:0.02681036852300167 threshold:0.9199999999999999 rank_kq: 728 rank_v: 912 max memory_allocated 24808.19287109375 
+[2025-11-23 13:45:28 root] (eigen_attn.py 264): INFO layer 21 error:0.022978372871875763 threshold:0.96 rank_kq: 856 rank_v: 968 max memory_allocated 24808.19287109375 
+[2025-11-23 13:45:42 root] (eigen_attn.py 264): INFO layer 22 error:0.02395276166498661 threshold:0.94 rank_kq: 784 rank_v: 936 max memory_allocated 24808.19287109375 
+[2025-11-23 13:46:07 root] (eigen_attn.py 264): INFO layer 23 error:0.023890981450676918 threshold:0.94 rank_kq: 792 rank_v: 936 max memory_allocated 24808.19287109375 
+[2025-11-23 13:46:33 root] (eigen_attn.py 264): INFO layer 24 error:0.027867861092090607 threshold:0.9199999999999999 rank_kq: 712 rank_v: 912 max memory_allocated 24808.19287109375 
+[2025-11-23 13:46:59 root] (eigen_attn.py 264): INFO layer 25 error:0.027878928929567337 threshold:0.94 rank_kq: 784 rank_v: 936 max memory_allocated 24808.19287109375 
+[2025-11-23 13:47:13 root] (eigen_attn.py 264): INFO layer 26 error:0.0003527215158101171 threshold:1.0 rank_kq: 1024 rank_v: 1024 max memory_allocated 24808.19287109375 
+[2025-11-23 13:47:39 root] (eigen_attn.py 264): INFO layer 27 error:0.02734537236392498 threshold:0.94 rank_kq: 784 rank_v: 936 max memory_allocated 24808.19287109375 
+[2025-11-23 13:48:00 root] (eigen_attn.py 264): INFO layer 28 error:0.025926677510142326 threshold:0.96 rank_kq: 864 rank_v: 968 max memory_allocated 24808.19287109375 
+[2025-11-23 13:48:14 root] (eigen_attn.py 264): INFO layer 29 error:0.0004128004948142916 threshold:1.02 rank_kq: 1024 rank_v: 1024 max memory_allocated 24808.19287109375 
+[2025-11-23 13:48:31 root] (eigen_attn.py 264): INFO layer 30 error:0.0020205904729664326 threshold:1.0 rank_kq: 1016 rank_v: 1024 max memory_allocated 24808.19287109375 
+[2025-11-23 13:48:46 root] (eigen_attn.py 264): INFO layer 31 error:0.00348931853659451 threshold:1.0 rank_kq: 1016 rank_v: 1024 max memory_allocated 24808.19287109375 
