@@ -362,18 +362,29 @@ def main():
 
 
     #get baseline results
+    logger.info("=== Evaluating baselines ===")
+    model_params, _ = get_model_size(lm)
+    if 'opt' in args.net.lower():
+        cache_size = get_kvcache_size_opt(lm)
+    elif 'mpt' in args.net.lower():
+        cache_size = get_kvcache_size_mpt(lm, args)
+    elif 'llama' in args.net.lower() or 'mistral' in args.net.lower() or 'qwen2' in args.net.lower():
+        # cache_size = get_kvcache_size_llama(lm)
+        cache_size = get_kvcache_size_llama(lm)
+    logger.info(f"Baseline model parameters : {model_params/1000000000} Billion")
+    logger.info(f"Baseline model KV Cache Size : {cache_size} GB for batch size of 1")
     if args.evaluate_baseline:
-        logger.info("=== Evaluating baselines ===")
-        model_params, _ = get_model_size(lm)
-        if 'opt' in args.net.lower():
-            cache_size = get_kvcache_size_opt(lm)
-        elif 'mpt' in args.net.lower():
-            cache_size = get_kvcache_size_mpt(lm, args)
-        elif 'llama' in args.net.lower() or 'mistral' in args.net.lower() or 'qwen2' in args.net.lower():
-            # cache_size = get_kvcache_size_llama(lm)
-            cache_size = get_kvcache_size_llama(lm)
-        logger.info(f"Baseline model parameters : {model_params/1000000000} Billion")
-        logger.info(f"Baseline model KV Cache Size : {cache_size} GB for batch size of 1")
+        # logger.info("=== Evaluating baselines ===")
+        # model_params, _ = get_model_size(lm)
+        # if 'opt' in args.net.lower():
+        #     cache_size = get_kvcache_size_opt(lm)
+        # elif 'mpt' in args.net.lower():
+        #     cache_size = get_kvcache_size_mpt(lm, args)
+        # elif 'llama' in args.net.lower() or 'mistral' in args.net.lower() or 'qwen2' in args.net.lower():
+        #     # cache_size = get_kvcache_size_llama(lm)
+        #     cache_size = get_kvcache_size_llama(lm)
+        # logger.info(f"Baseline model parameters : {model_params/1000000000} Billion")
+        # logger.info(f"Baseline model KV Cache Size : {cache_size} GB for batch size of 1")
         evaluate(lm, args,logger)
         return
 
