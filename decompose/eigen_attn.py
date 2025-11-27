@@ -90,6 +90,7 @@ def eigenattn(
                 break
             try:
                 model(batch[0].to(dev))
+                # model(batch[0])
             except ValueError:
                 pass
     

@@ -39,6 +39,12 @@ class LMClass(BaseLM):
             args.model, attn_implementation=args.attn_implementation, cache_dir = args.cache_dir
         )
 
+        print('='*20)
+        print("ROPE SCALING")
+        print(config.rope_scaling)
+        print(config.max_position_embeddings)
+        print('='*20)
+
         config.use_cache = False
         use_fast = False
         if 'mpt' in args.net.lower():
@@ -71,7 +77,7 @@ class LMClass(BaseLM):
         else:
             self.seqlen = self.model.config.max_position_embeddings
         
-        self.model.to(self._device)
+        # self.model.to(self._device)
         
         self.model.eval()
         self.vocab_size = self.tokenizer.vocab_size

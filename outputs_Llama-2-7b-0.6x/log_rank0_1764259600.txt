@@ -1,0 +1,7 @@
+[2025-11-27 16:06:40 root] (main_eigen_attn.py 348): INFO Namespace(model='meta-llama/Llama-2-7b-hf', cache_dir='./HF_cache', resume=None, calib_dataset='wikitext2', nsamples=128, batch_size=2, seed=2, tasks='openbookqa,winogrande,arc_challenge,arc_easy,hellaswag', eval_ppl=True, num_fewshot=0, limit=-1, multigpu=False, attn_implementation='eager', net='Llama-2-7b', load_low_rank=False, load_peft_model=False, peft_model_path=None, save_dir='./compressed_Llama-2-7b-0.6x', output_dir='./outputs_Llama-2-7b-0.6x', evaluate_baseline=False, avg_dim=8, error_budget=0.055, fine_tune=False)
+[2025-11-27 16:06:41 root] (main_eigen_attn.py 365): INFO === Evaluating baselines ===
+[2025-11-27 16:06:42 root] (main_eigen_attn.py 374): INFO Baseline model parameters : 6.607343616 Billion
+[2025-11-27 16:06:42 root] (main_eigen_attn.py 375): INFO Baseline model KV Cache Size : 1.0 GB for batch size of 1
+[2025-11-27 16:06:42 root] (main_eigen_attn.py 397): INFO === start low rank decomposition ===
+[2025-11-27 16:06:42 root] (main_eigen_attn.py 403): INFO load calibration from ./HF_cache/dataloader_Llama_wikitext2_128.cache
+[2025-11-27 16:06:42 root] (eigen_attn.py 16): INFO Starting ...

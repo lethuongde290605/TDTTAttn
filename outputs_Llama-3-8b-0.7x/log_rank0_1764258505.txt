@@ -1,0 +1,8 @@
+[2025-11-27 15:48:25 root] (main_eigen_attn.py 348): INFO Namespace(model='meta-llama/Llama-3.1-8B-Instruct', cache_dir='./HF_cache', resume=None, calib_dataset='wikitext2', nsamples=128, batch_size=2, seed=2, tasks='openbookqa,winogrande,arc_challenge,arc_easy,hellaswag', eval_ppl=True, num_fewshot=0, limit=-1, multigpu=False, attn_implementation='eager', net='Llama-3-8b', load_low_rank=False, load_peft_model=False, peft_model_path=None, save_dir='./compressed_Llama-3-8b-0.7x', output_dir='./outputs_Llama-3-8b-0.7x', evaluate_baseline=False, avg_dim=8, error_budget=0.055, fine_tune=False)
+[2025-11-27 15:48:45 root] (main_eigen_attn.py 365): INFO === Evaluating baselines ===
+[2025-11-27 15:48:46 root] (main_eigen_attn.py 374): INFO Baseline model parameters : 7.504924672 Billion
+[2025-11-27 15:48:46 root] (main_eigen_attn.py 375): INFO Baseline model KV Cache Size : 0.25 GB for batch size of 1
+[2025-11-27 15:48:46 root] (main_eigen_attn.py 397): INFO === start low rank decomposition ===
+[2025-11-27 15:48:46 root] (main_eigen_attn.py 403): INFO load calibration from ./HF_cache/dataloader_Llama_wikitext2_128.cache
+[2025-11-27 15:48:46 root] (eigen_attn.py 16): INFO Starting ...
+[2025-11-27 15:49:03 root] (eigen_attn.py 264): INFO layer 0 error:0.04298853874206543 threshold:0.98 rank_kq: 872 rank_v: 992 max memory_allocated 24845.8134765625 

@@ -1,0 +1,62 @@
+[2025-11-27 13:58:11 root] (main_eigen_attn.py 348): INFO Namespace(model='meta-llama/Llama-3.1-8B-Instruct', cache_dir='./HF_cache', resume=None, calib_dataset='wikitext2', nsamples=128, batch_size=2, seed=2, tasks='openbookqa,winogrande,arc_challenge,arc_easy,hellaswag', eval_ppl=True, num_fewshot=0, limit=-1, multigpu=False, attn_implementation='eager', net='Llama-3-8b', load_low_rank=False, load_peft_model=False, peft_model_path=None, save_dir='./compressed_Llama-3-8b-0.7x', output_dir='./outputs_Llama-3-8b-0.7x', evaluate_baseline=False, avg_dim=8, error_budget=0.078, fine_tune=False)
+[2025-11-27 13:58:26 root] (main_eigen_attn.py 365): INFO === Evaluating baselines ===
+[2025-11-27 13:58:27 root] (main_eigen_attn.py 374): INFO Baseline model parameters : 7.504924672 Billion
+[2025-11-27 13:58:27 root] (main_eigen_attn.py 375): INFO Baseline model KV Cache Size : 0.25 GB for batch size of 1
+[2025-11-27 13:58:27 root] (main_eigen_attn.py 397): INFO === start low rank decomposition ===
+[2025-11-27 13:58:27 root] (main_eigen_attn.py 403): INFO load calibration from ./HF_cache/dataloader_Llama_wikitext2_128.cache
+[2025-11-27 13:58:27 root] (eigen_attn.py 16): INFO Starting ...
+[2025-11-27 13:58:38 root] (eigen_attn.py 264): INFO layer 0 error:0.06301089376211166 threshold:0.96 rank_kq: 760 rank_v: 960 max memory_allocated 24880.81005859375 
+[2025-11-27 13:58:51 root] (eigen_attn.py 264): INFO layer 1 error:0.05905362218618393 threshold:0.8999999999999999 rank_kq: 520 rank_v: 872 max memory_allocated 24880.81005859375 
+[2025-11-27 13:59:10 root] (eigen_attn.py 264): INFO layer 2 error:0.03824162483215332 threshold:0.8199999999999998 rank_kq: 480 rank_v: 760 max memory_allocated 24880.81005859375 
+[2025-11-27 13:59:26 root] (eigen_attn.py 264): INFO layer 3 error:0.07411302626132965 threshold:0.8599999999999999 rank_kq: 552 rank_v: 832 max memory_allocated 24880.81005859375 
+[2025-11-27 13:59:42 root] (eigen_attn.py 264): INFO layer 4 error:0.07173019647598267 threshold:0.8599999999999999 rank_kq: 528 rank_v: 824 max memory_allocated 24880.81005859375 
+[2025-11-27 14:00:01 root] (eigen_attn.py 264): INFO layer 5 error:0.07789525389671326 threshold:0.8199999999999998 rank_kq: 464 rank_v: 752 max memory_allocated 24880.81005859375 
+[2025-11-27 14:00:15 root] (eigen_attn.py 264): INFO layer 6 error:0.07179383188486099 threshold:0.8799999999999999 rank_kq: 616 rank_v: 856 max memory_allocated 24880.81005859375 
+[2025-11-27 14:00:29 root] (eigen_attn.py 264): INFO layer 7 error:0.07208596915006638 threshold:0.8999999999999999 rank_kq: 664 rank_v: 872 max memory_allocated 24880.81005859375 
+[2025-11-27 14:00:46 root] (eigen_attn.py 264): INFO layer 8 error:0.07440111041069031 threshold:0.8399999999999999 rank_kq: 512 rank_v: 800 max memory_allocated 24880.81005859375 
+[2025-11-27 14:01:02 root] (eigen_attn.py 264): INFO layer 9 error:0.07361378520727158 threshold:0.8599999999999999 rank_kq: 568 rank_v: 816 max memory_allocated 24880.81005859375 
+[2025-11-27 14:01:20 root] (eigen_attn.py 264): INFO layer 10 error:0.07382658869028091 threshold:0.8399999999999999 rank_kq: 520 rank_v: 792 max memory_allocated 24880.81005859375 
+[2025-11-27 14:01:37 root] (eigen_attn.py 264): INFO layer 11 error:0.07679636776447296 threshold:0.8399999999999999 rank_kq: 536 rank_v: 784 max memory_allocated 24880.81005859375 
+[2025-11-27 14:01:52 root] (eigen_attn.py 264): INFO layer 12 error:0.07352369278669357 threshold:0.8799999999999999 rank_kq: 616 rank_v: 848 max memory_allocated 24880.81005859375 
+[2025-11-27 14:02:10 root] (eigen_attn.py 264): INFO layer 13 error:0.07582511752843857 threshold:0.8399999999999999 rank_kq: 496 rank_v: 808 max memory_allocated 24880.81005859375 
+[2025-11-27 14:02:24 root] (eigen_attn.py 264): INFO layer 14 error:0.07536496222019196 threshold:0.8799999999999999 rank_kq: 592 rank_v: 848 max memory_allocated 24880.81005859375 
+[2025-11-27 14:02:43 root] (eigen_attn.py 264): INFO layer 15 error:0.07759712636470795 threshold:0.8399999999999999 rank_kq: 512 rank_v: 808 max memory_allocated 24880.81005859375 
+[2025-11-27 14:03:00 root] (eigen_attn.py 264): INFO layer 16 error:0.07062268257141113 threshold:0.8599999999999999 rank_kq: 536 rank_v: 832 max memory_allocated 24880.81005859375 
+[2025-11-27 14:03:19 root] (eigen_attn.py 264): INFO layer 17 error:0.07475709915161133 threshold:0.8199999999999998 rank_kq: 472 rank_v: 784 max memory_allocated 24880.81005859375 
+[2025-11-27 14:03:37 root] (eigen_attn.py 264): INFO layer 18 error:0.0657806396484375 threshold:0.8199999999999998 rank_kq: 480 rank_v: 768 max memory_allocated 24880.81005859375 
+[2025-11-27 14:04:15 root] (eigen_attn.py 264): INFO layer 19 error:0.05045688897371292 threshold:0.8199999999999998 rank_kq: 480 rank_v: 776 max memory_allocated 24880.81005859375 
+[2025-11-27 14:04:55 root] (eigen_attn.py 264): INFO layer 20 error:0.05412961170077324 threshold:0.8199999999999998 rank_kq: 472 rank_v: 784 max memory_allocated 24880.81005859375 
+[2025-11-27 14:05:35 root] (eigen_attn.py 264): INFO layer 21 error:0.06393283605575562 threshold:0.8199999999999998 rank_kq: 480 rank_v: 784 max memory_allocated 24880.81005859375 
+[2025-11-27 14:06:15 root] (eigen_attn.py 264): INFO layer 22 error:0.049967993050813675 threshold:0.8199999999999998 rank_kq: 472 rank_v: 776 max memory_allocated 24880.81005859375 
+[2025-11-27 14:06:55 root] (eigen_attn.py 264): INFO layer 23 error:0.05125408247113228 threshold:0.8199999999999998 rank_kq: 472 rank_v: 784 max memory_allocated 24880.81005859375 
+[2025-11-27 14:07:32 root] (eigen_attn.py 264): INFO layer 24 error:0.0454455129802227 threshold:0.8399999999999999 rank_kq: 496 rank_v: 808 max memory_allocated 24880.81005859375 
+[2025-11-27 14:08:09 root] (eigen_attn.py 264): INFO layer 25 error:0.061950959265232086 threshold:0.8399999999999999 rank_kq: 496 rank_v: 800 max memory_allocated 24880.81005859375 
+[2025-11-27 14:08:47 root] (eigen_attn.py 264): INFO layer 26 error:0.057154580950737 threshold:0.8399999999999999 rank_kq: 496 rank_v: 816 max memory_allocated 24880.81005859375 
+[2025-11-27 14:09:27 root] (eigen_attn.py 264): INFO layer 27 error:0.05739634484052658 threshold:0.8199999999999998 rank_kq: 464 rank_v: 784 max memory_allocated 24880.81005859375 
+[2025-11-27 14:10:07 root] (eigen_attn.py 264): INFO layer 28 error:0.06901213526725769 threshold:0.8199999999999998 rank_kq: 480 rank_v: 792 max memory_allocated 24880.81005859375 
+[2025-11-27 14:10:23 root] (eigen_attn.py 264): INFO layer 29 error:0.002850685501471162 threshold:1.0 rank_kq: 1016 rank_v: 1024 max memory_allocated 24880.81005859375 
+[2025-11-27 14:10:55 root] (eigen_attn.py 264): INFO layer 30 error:0.07747948914766312 threshold:0.8799999999999999 rank_kq: 592 rank_v: 872 max memory_allocated 24880.81005859375 
+[2025-11-27 14:11:29 root] (eigen_attn.py 264): INFO layer 31 error:0.07461843639612198 threshold:0.8599999999999999 rank_kq: 536 rank_v: 824 max memory_allocated 24880.81005859375 
+[2025-11-27 14:12:39 root] (main_eigen_attn.py 527): INFO 852.7479658126831
+[2025-11-27 14:12:39 root] (main_eigen_attn.py 529): INFO === Evaluating compressed model ===
+[2025-11-27 14:12:40 root] (main_eigen_attn.py 531): INFO Compressed model parameters : 7.308463616 Billion
+[2025-11-27 14:12:40 root] (main_eigen_attn.py 538): INFO Compressed model KV Cache Size : 0.1663818359375 GB for batch size of 1
+[2025-11-27 14:12:45 root] (main_eigen_attn.py 174): INFO load calibration from ./HF_cache/testloader_Llama_wikitext2_all.cache
+[2025-11-27 14:14:12 root] (main_eigen_attn.py 220): INFO wikitext2 : 9.08749771118164
+[2025-11-27 14:14:12 root] (main_eigen_attn.py 174): INFO load calibration from ./HF_cache/testloader_Llama_c4_all.cache
+[2025-11-27 14:16:50 root] (main_eigen_attn.py 220): INFO c4 : 15.353190422058105
+[2025-11-27 14:16:54 lm-eval] (evaluator.py 131): INFO Setting random seed to 0 | Setting numpy seed to 1234 | Setting torch manual seed to 1234
+[2025-11-27 14:16:54 lm-eval] (evaluator.py 190): INFO Using pre-initialized model
+[2025-11-27 14:17:30 lm-eval] (evaluator.py 238): WARNING Overwriting default num_fewshot of hellaswag from None to 0
+[2025-11-27 14:17:30 lm-eval] (evaluator.py 238): WARNING Overwriting default num_fewshot of arc_easy from None to 0
+[2025-11-27 14:17:30 lm-eval] (evaluator.py 238): WARNING Overwriting default num_fewshot of arc_challenge from None to 0
+[2025-11-27 14:17:30 lm-eval] (evaluator.py 238): WARNING Overwriting default num_fewshot of winogrande from None to 0
+[2025-11-27 14:17:30 lm-eval] (evaluator.py 238): WARNING Overwriting default num_fewshot of openbookqa from None to 0
+[2025-11-27 14:17:30 lm-eval] (task.py 395): INFO Building contexts for hellaswag on rank 0...
+[2025-11-27 14:17:35 lm-eval] (task.py 395): INFO Building contexts for arc_easy on rank 0...
+[2025-11-27 14:17:38 lm-eval] (task.py 395): INFO Building contexts for arc_challenge on rank 0...
+[2025-11-27 14:17:39 lm-eval] (task.py 395): INFO Building contexts for winogrande on rank 0...
+[2025-11-27 14:17:39 lm-eval] (task.py 395): INFO Building contexts for openbookqa on rank 0...
+[2025-11-27 14:17:39 lm-eval] (evaluator.py 378): INFO Running loglikelihood requests
+[2025-11-27 15:14:01 root] (main_eigen_attn.py 247): INFO result: {'hellaswag': {'acc,none': 0.5163314080860386, 'acc_stderr,none': 0.004987119003151138, 'acc_norm,none': 0.7145986855208126, 'acc_norm_stderr,none': 0.0045068240943332985, 'alias': 'hellaswag'}, 'arc_easy': {'acc,none': 0.7680976430976431, 'acc_stderr,none': 0.00866022131151487, 'acc_norm,none': 0.7508417508417509, 'acc_norm_stderr,none': 0.008875238553583131, 'alias': 'arc_easy'}, 'arc_challenge': {'acc,none': 0.4513651877133106, 'acc_stderr,none': 0.014542104569955378, 'acc_norm,none': 0.4991467576791809, 'acc_norm_stderr,none': 0.014611369529813302, 'alias': 'arc_challenge'}, 'winogrande': {'acc,none': 0.6977111286503551, 'acc_stderr,none': 0.012907200361627598, 'alias': 'winogrande'}, 'openbookqa': {'acc,none': 0.298, 'acc_stderr,none': 0.020475118092988954, 'acc_norm,none': 0.416, 'acc_norm_stderr,none': 0.02206494331392886, 'alias': 'openbookqa'}}
+[2025-11-27 15:14:03 root] (main_eigen_attn.py 257): INFO Saved results to compressed_Llama-3-8b-0.7x/results.json
