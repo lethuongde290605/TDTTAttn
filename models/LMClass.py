@@ -50,28 +50,30 @@ class LMClass(BaseLM):
         if 'mpt' in args.net.lower():
             use_fast = True
         
+        device_config = self._device
+        
         self.tokenizer = AutoTokenizer.from_pretrained(args.model, use_fast=use_fast,legacy=False, cache_dir = args.cache_dir)
         if args.load_low_rank :
             low_rank_config = torch.load(os.path.join(args.save_dir,'low_rank_config.pt'))
             if 'mpt' in args.net.lower():
-                self.model = MptForCausalLM_EigenAttn.from_pretrained(args.save_dir, config=config, low_rank_config=low_rank_config, device_map='cpu',torch_dtype=torch.float16, cache_dir=args.cache_dir)
+                self.model = MptForCausalLM_EigenAttn.from_pretrained(args.save_dir, config=config, low_rank_config=low_rank_config, device_map=device_config,torch_dtype=torch.float16, cache_dir=args.cache_dir)
                 if args.load_peft_model:
                     self.model = PeftModel.from_pretrained(self.model, args.peft_model_path)
                     
             elif 'opt' in args.net.lower():
-                self.model = OPTForCausalLM_EigenAttn.from_pretrained(args.save_dir, config=config, low_rank_config = low_rank_config, device_map='cpu',torch_dtype=torch.float16, cache_dir=args.cache_dir)
+                self.model = OPTForCausalLM_EigenAttn.from_pretrained(args.save_dir, config=config, low_rank_config = low_rank_config, device_map=device_config,torch_dtype=torch.float16, cache_dir=args.cache_dir)
                 if args.load_peft_model:
                     self.model = PeftModel.from_pretrained(self.model, args.peft_model_path)
 
             elif 'llama' in args.net.lower():
-                self.model = LlamaForCausalLM_EigenAttn.from_pretrained(args.save_dir, config=config, low_rank_config=low_rank_config, device_map='cpu',torch_dtype=torch.float16, cache_dir=args.cache_dir)
+                self.model = LlamaForCausalLM_EigenAttn.from_pretrained(args.save_dir, config=config, low_rank_config=low_rank_config, device_map=device_config,torch_dtype=torch.float16, cache_dir=args.cache_dir)
                 if args.load_peft_model:
                     self.model = PeftModel.from_pretrained(self.model, args.peft_model_path)
                     self.model = self.model.model
             else:
                 raise NotImplementedError
         else:
-            self.model = AutoModelForCausalLM.from_pretrained(args.model, config=config, device_map='cpu',torch_dtype=torch.float16, cache_dir=args.cache_dir)
+            self.model = AutoModelForCausalLM.from_pretrained(args.model, config=config, device_map=device_config,torch_dtype=torch.float16, cache_dir=args.cache_dir)
         if 'mpt' in args.net.lower():
             self.seqlen = self.model.config.max_seq_len
         else:
